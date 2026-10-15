@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { scroll-behavior: smooth; }
+  body { @apply bg-slate-50 text-ink-900 antialiased; }
+  h1, h2, h3, h4 { @apply tracking-tight; }
+  :focus-visible { @apply outline-none ring-2 ring-brand-500 ring-offset-2; }
+}
+
+@layer components {
+  .btn { @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 min-h-[44px]; }
+  .btn-primary { @apply btn bg-brand-600 text-white shadow-sm hover:bg-brand-700 active:bg-brand-800; }
+  .btn-accent { @apply btn bg-accent-500 text-white shadow-sm hover:bg-accent-600; }
+  .btn-outline { @apply btn border border-slate-300 bg-white text-ink-700 hover:bg-slate-50; }
+  .btn-danger { @apply btn bg-red-600 text-white hover:bg-red-700; }
+  .btn-ghost { @apply btn text-ink-700 hover:bg-slate-100; }
+  .btn-sm { @apply min-h-[36px] px-3 py-1.5 text-xs; }
+  .btn-lg { @apply px-6 py-3 text-base; }
+
+  .card { @apply rounded-2xl border border-slate-200 bg-white shadow-card; }
+  .card-pad { @apply card p-4 sm:p-6; }
+
+  .label { @apply mb-1 block text-sm font-medium text-ink-700; }
+  .input { @apply w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-ink-900 placeholder-slate-400 transition focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-200 disabled:bg-slate-100; }
+  .field-error { @apply mt-1 text-xs text-red-600; }
+
+  .badge { @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold; }
+
+  .table-wrap { @apply overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-card; }
+  .table { @apply w-full min-w-[640px] text-left text-sm; }
+  .table th { @apply whitespace-nowrap bg-slate-50 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-500; }
+  .table td { @apply border-t border-slate-100 px-4 py-3 align-middle; }
+  .table tbody tr:hover { @apply bg-slate-50/60; }
+
+  .page-title { @apply text-2xl font-bold text-ink-900 sm:text-3xl; }
+  .section-title { @apply text-xl font-bold text-ink-900 sm:text-2xl; }
+  .container-app { @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8; }
+}
+
+/* Carousels: native scroll-snap = smooth touch swiping on mobile, no JS needed for the motion */
+.snap-row { display: flex; gap: 1rem; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -webkit-overflow-scrolling: touch; padding-bottom: .5rem; }
+.snap-row::-webkit-scrollbar { display: none; }
+.snap-row > * { scroll-snap-align: start; flex: 0 0 auto; }
+
+.skeleton { @apply animate-pulse rounded-xl bg-slate-200; }
+
+/* Leaflet-free map placeholder */
+.map-frame { @apply h-72 w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-100; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}
+
