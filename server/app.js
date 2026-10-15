@@ -22,6 +22,21 @@ function createApp() {
     helmet({
       // profile photos are served to the SPA from another origin in development
       crossOriginResourcePolicy: { policy: 'cross-origin' },
+      // The built SPA is served by this server in production, so the CSP must allow the third-party
+      // scripts/frames it uses: Razorpay Checkout (payments), Google Maps / OpenStreetMap, Google Fonts.
+      // Helmet's other default directives (object-src, base-uri, frame-ancestors...) stay in force.
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", 'https://checkout.razorpay.com', 'https://maps.googleapis.com'],
+          frameSrc: ["'self'", 'https://api.razorpay.com', 'https://checkout.razorpay.com', 'https://www.openstreetmap.org'],
+          connectSrc: ["'self'", 'https://api.razorpay.com', 'https://lumberjack.razorpay.com', 'https://checkout.razorpay.com', 'https://maps.googleapis.com', 'https://nominatim.openstreetmap.org', 'ws:', 'wss:'],
+          imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
+          styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+          fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com'],
+          formAction: ["'self'", 'https://api.razorpay.com'],
+        },
+      },
     })
   );
   app.use(cors({ origin: env.clientUrl, credentials: true }));

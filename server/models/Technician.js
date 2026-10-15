@@ -55,6 +55,7 @@ const technicianSchema = new mongoose.Schema(
 
     availabilityStatus: { type: String, enum: Object.values(AVAILABILITY), default: AVAILABILITY.OFFLINE },
     availableFrom: { type: Date, default: null }, // "Available After: 3:00 PM" when BUSY
+    busyBySystem: { type: Boolean, default: false }, // BUSY was set automatically (travelling / on a job), not chosen by the technician
     workingHours: {
       start: { type: String, default: '08:00' },
       end: { type: String, default: '20:00' },

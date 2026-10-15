@@ -7,6 +7,7 @@ const createApp = require('./app');
 const { initSockets } = require('./sockets');
 const documentService = require('./services/documentService');
 const assignmentService = require('./services/assignmentService');
+const technicianService = require('./services/technicianService');
 const { getSettings } = require('./services/settingsService');
 const User = require('./models/User');
 const bcrypt = require('bcryptjs');
@@ -41,6 +42,7 @@ async function start() {
     if (sweeping) return;
     sweeping = true;
     try {
+      await technicianService.syncStaleBusy(); // clear stale BUSY statuses first so freed technicians can take waiting requests
       await assignmentService.sweep();
     } catch (err) {
       // eslint-disable-next-line no-console

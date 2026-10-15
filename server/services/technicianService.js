@@ -27,17 +27,46 @@ async function syncTechnicianState(technicianId) {
   tech.currentStatus = inProgress ? `On job: ${inProgress.serviceName} #${inProgress.requestNumber}` : jobs.length ? `${jobs.length} upcoming job(s)` : 'Idle';
 
   if (['AVAILABLE', 'BUSY'].includes(tech.availabilityStatus)) {
+    const manualBusy = tech.availabilityStatus === 'BUSY' && !tech.busyBySystem; // chosen by the technician: never overridden while valid
     if (inProgress) {
-      tech.availabilityStatus = 'BUSY';
-      const end = new Date(inProgress.scheduledAt.getTime() + (inProgress.durationMinutes || 60) * 60000);
-      tech.availableFrom = end > new Date() ? end : new Date(Date.now() + 30 * 60000);
-    } else if (tech.availabilityStatus === 'BUSY' && (!tech.availableFrom || tech.availableFrom <= new Date())) {
-      tech.availabilityStatus = 'AVAILABLE';
-      tech.availableFrom = null;
+      if (!manualBusy) {
+        tech.availabilityStatus = 'BUSY';
+        tech.busyBySystem = true;
+        const end = new Date(inProgress.scheduledAt.getTime() + (inProgress.durationMinutes || 60) * 60000);
+        tech.availableFrom = end > new Date() ? end : new Date(Date.now() + 30 * 60000);
+      }
+    } else if (tech.availabilityStatus === 'BUSY') {
+      // Nothing in progress any more: release a BUSY the system set itself immediately (even if the job
+      // finished before its scheduled end). A BUSY the technician set stays until its "available after" time.
+      if (tech.busyBySystem || !tech.availableFrom || tech.availableFrom <= new Date()) {
+        tech.availabilityStatus = 'AVAILABLE';
+        tech.availableFrom = null;
+        tech.busyBySystem = false;
+      }
+    } else {
+      tech.busyBySystem = false;
     }
   }
   await tech.save();
   return tech;
+}
+
+/**
+ * Periodic re-check (called by the sweeper): re-derives the state of every BUSY technician so stale
+ * statuses clear on their own (system BUSY with no job in progress, or a manual BUSY that has expired).
+ * Returns the number of technicians that became AVAILABLE.
+ */
+async function syncStaleBusy() {
+  const candidates = await Technician.find({
+    availabilityStatus: 'BUSY',
+    $or: [{ busyBySystem: true }, { availableFrom: null }, { availableFrom: { $lte: new Date() } }],
+  }).select('_id').lean();
+  let freed = 0;
+  for (const c of candidates) {
+    const t = await syncTechnicianState(c._id);
+    if (t && t.availabilityStatus === 'AVAILABLE') freed += 1;
+  }
+  return freed;
 }
 
 /**
@@ -119,4 +148,5 @@ function adminTechnicianView(tech) {
   };
 }
 
-module.exports = { activeJobCount, syncTechnicianState, releaseOpenJobs, applyRatingToTechnician, publicTechnicianCard, adminTechnicianView };
+module.exports = {
+  syncStaleBusy, activeJobCount, syncTechnicianState, releaseOpenJobs, applyRatingToTechnician, publicTechnicianCard, adminTechnicianView };

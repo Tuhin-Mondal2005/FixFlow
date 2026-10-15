@@ -159,6 +159,7 @@ exports.updateAvailability = asyncHandler(async (req, res) => {
 
   tech.availabilityStatus = availabilityStatus;
   tech.availableFrom = availabilityStatus === 'BUSY' ? new Date(availableFrom) : null;
+  tech.busyBySystem = false; // an explicit choice by the technician
   if (workingHours) tech.workingHours = workingHours;
   await tech.save();
 
